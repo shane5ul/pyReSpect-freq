@@ -110,38 +110,6 @@ def kernel_prestore(H, kernMat):
 		        	
 	"""
 	return np.dot(kernMat, np.exp(H))	
-	   
-#~ def kernel(H, w, s):
-	#~ """
-		
-		 #~ Function: kernel(input)
-		
-		 #~ outputs the 2n*1 dimensional vector K(H)(w) which is comparable to Gexp
-		 #~ modifying kernel for unevenly spaced s_i
-		
-		 #~ Input: H = substituted CRS,
-		        #~ w = n*1 vector contains times
-		        #~ s = relaxation modes
-			
-	#~ """
-	#~ ns = len(s);
-	#~ hs = np.zeros(ns);
 
-	#~ #
-	#~ # integration uses trapezoidal rule
-	#~ # end steps have half the value as middle steps
-	#~ #
-	#~ hs[0]      = 0.5 * np.log(s[1]/s[0])
-	#~ hs[ns-1]   = 0.5 * np.log(s[ns-1]/s[ns-2])
-	#~ hs[1:ns-1] = 0.5 * (np.log(s[2:ns]) - np.log(s[0:ns-2]))
-
-	#~ S, W       = np.meshgrid(s, w);
-	#~ ws         = S*W
-	#~ ws2        = ws**2
-
-	#~ kern       = np.vstack((ws2/(1+ws2), ws/(1+ws2)))
-	#~ K          = np.dot(kern, hs * np.exp(H))
-		
-	#~ return K
 	
 	

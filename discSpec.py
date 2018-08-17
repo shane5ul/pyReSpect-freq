@@ -204,6 +204,26 @@ def GridDensity(x, px, N):
 
 	return z, h
 
+def guiFurnishGlobals(par):
+
+    # toggle flags to prevent printing    
+    par['verbose'] = False
+    par['plotting'] = False
+    
+    # Read experimental data
+    w, Gexp = common.GetExpData(par['GexpFile'])
+
+    # Read continuous spectrum
+    s, H    = np.loadtxt('output/H.dat', unpack=True)    
+
+    # Read continuous fit
+    _, Gfitc = np.loadtxt('output/Gfit.dat', unpack=True)    
+    
+    wt  = GetWeights(H, t, w)
+    wt  = wt/np.trapz(wt, np.log(s))
+    
+    return s, H, w, Gexp, Gfitc, wt
+
 def getDiscSpec(par):
 
 
@@ -211,7 +231,7 @@ def getDiscSpec(par):
 	if par['verbose']:
 		print('\n(*) Start\n(*) Loading Data Files: ... {}...'.format(par['GexpFile']))
 
-	w, Gexp, s, H = ReadData()
+	w, Gexp, s, H = ReadData(par)
 
 	n   = len(w);
 	ns  = len(s);
@@ -359,7 +379,7 @@ def getDiscSpec(par):
 
 	return Nopt, g, tau, error
 
-def ReadData(fNameH = 'output/H.dat'):
+def ReadData(par, fNameH = 'output/H.dat'):
 	"""
 		Read experimental data, and the continuous spectrum
 	"""

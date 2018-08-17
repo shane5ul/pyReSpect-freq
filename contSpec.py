@@ -208,6 +208,56 @@ def kernelD(H, kernMat):
 	
 	return DK
 
+
+# Furnish Globals that you will need for interactive plot
+def guiFurnishGlobals(par):
+
+	from matplotlib import rcParams
+
+	w, Gexp = common.GetExpData(par['GexpFile'])
+
+	if par['verbose']:
+		print('(*) Initial Set up...', end="")
+
+	# Set up some internal variables
+	n    = len(w)
+	ns   = par['ns']    # discretization of 'tau'
+
+	wmin = w[0];
+	wmax = w[n-1];
+
+	# determine frequency window
+	if par['FreqEnd'] == 1:
+		smin = np.exp(-np.pi/2)/wmax; smax = np.exp(np.pi/2)/wmin		
+	elif par['FreqEnd'] == 2:
+		smin = 1./wmax; smax = 1./wmin				
+	elif par['FreqEnd'] == 3:
+		smin = np.exp(+np.pi/2)/wmax; smax = np.exp(-np.pi/2)/wmin
+
+	hs   = (smax/smin)**(1./(ns-1))
+	s    = smin * hs**np.arange(ns)
+
+	kernMat = common.getKernMat(s, w)
+
+	# toggle flags to prevent printing
+
+	par['verbose'] = False
+	par['plotting'] = False
+
+	# load lamda, rho, eta
+	lam, rho, eta = np.loadtxt('output/rho-eta.dat', unpack=True)
+
+	# plot settings
+	rcParams['axes.labelsize'] = 14 
+	rcParams['xtick.labelsize'] = 12
+	rcParams['ytick.labelsize'] = 12 
+	rcParams['legend.fontsize'] = 12
+	rcParams['lines.linewidth'] = 2
+
+	plt.clf()
+
+	return s, w, kernMat, Gexp, par, lam, rho, eta
+
 def getContSpec(par):
 	
 	# read input
