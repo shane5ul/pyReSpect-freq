@@ -67,13 +67,10 @@ def lcurve(Gexp, Hgs, SmoothFac, kernMat):
 	%
 	%"""
 
-	npoints  = 40
-	lam_min  = 1e-12
-	lam_max  = 1e+3
-
-	#~ npoints  = 20
-	#~ lam_min  = 1e-6
-	#~ lam_max  = 1e+1
+	# take a coarse mesh: 2 lambda's per decade (auto)
+	lam_min  = 1e-10
+	lam_max  = 1e+1
+	npoints  = int(2 * (np.log10(lam_max) - np.log10(lam_min)))
 
 	hlam    = (lam_max/lam_min)**(1./(npoints-1.))	
 	lam     = lam_min * hlam**np.arange(npoints)
@@ -93,16 +90,22 @@ def lcurve(Gexp, Hgs, SmoothFac, kernMat):
 		eta[i]  = np.linalg.norm(np.diff(H, n=2))
 
 	#
-	# 11/4/2015: New strategy to find corner!
+	# 8/1/2018: Making newer strategy more accurate and robust: dividing by minimum rho/eta
+	# which is not as sensitive to lam_min, lam_max. This makes lamC robust to range of lam explored
 	#
-	er = rho/np.amax(rho) + eta/np.amax(eta);
 	
-	#~ plt.loglog(rho, eta)
-	#~ plt.show()
+	#er = rho/np.amin(rho) + eta/np.amin(eta);
+	er    = rho/np.amin(rho) + eta/(np.sqrt(np.amax(eta)*np.amin(eta)));
+	#
+	# Since rho v/s lambda is smooth, we can interpolate the coarse mesh to find minimum
+	#
 	
-	ermin = np.amin(er)
-	eridx = np.argmin(er)
-	lamC  = lam[eridx]
+	lami = np.logspace(np.log10(min(lam)), np.log10(max(lam)), 1000)
+	erri = np.exp(interp1d(np.log(lam), np.log(er), kind='cubic')(np.log(lami)))
+
+	ermin = np.amin(erri)
+	eridx = np.argmin(erri)
+	lamC  = lami[eridx]	
 
 	#
 	# Dialling in the Smoothness Factor
@@ -129,7 +132,7 @@ def getH(lam, Gexp, H, kernMat):
 	%          Default uses Trust-Region Method
 	%"""
 
-	res_lsq = least_squares(residualLM, H, args=(lam, Gexp, kernMat))
+	res_lsq = least_squares(residualLM, H, jac=jacobianLM, args=(lam, Gexp, kernMat))
 	return res_lsq.x
 
 def residualLM(H, lam, Gexp, kernMat):
@@ -154,14 +157,14 @@ def residualLM(H, lam, Gexp, kernMat):
 	
 	return r
 	
-def jacobianLM(H, lam, Gexp, w, s):
+def jacobianLM(H, lam, Gexp, kernMat):
 	"""
 	%
 	% HELPER FUNCTION: Gets Jacobian J
 	%"""
 	
-	n   = len(w);
-	ns  = len(s);
+	n   = int(kernMat.shape[0]/2);
+	ns  = kernMat.shape[1];
 	nl  = ns - 2;
 
 	Jr  = np.zeros((2*n + nl,ns))
@@ -179,43 +182,29 @@ def jacobianLM(H, lam, Gexp, w, s):
 	# Kmatrix is 2*n * ns matrix
 	#
 	Kmatrix             = np.dot((1./Gexp).reshape(2*n,1), np.ones((1,ns)))/np.sqrt(n);
-	Jr[0:2*n, 0:ns]     = -kernelD(H,w,s) * Kmatrix;
+	Jr[0:2*n, 0:ns]     = -kernelD(H, kernMat) * Kmatrix;
 	Jr[2*n:2*n+nl,0:ns] = np.sqrt(lam) * L/np.sqrt(nl);
 
 	return	Jr
 
-def kernelD(H, w, s):
+def kernelD(H, kernMat):
 	"""%
 	% Function: kernelD(input)
 	%
 	% outputs the 2n*ns dimensional vector DK(H)(w)
 	% approximates dK/dHj
 	%
-	% Input: H = substituted CRS,
-	%        w = n*1 vector contains frequencies,
-	%        s = relaxation modes,
-	%
-	% Output: DK = Jacobian of H
+	% Input: H       = substituted CRS,
+	%	     kernMat = matrix for faster kernel evaluation
+	% Output: DK     = Jacobian of H
 	%	
 	%"""
-	
-	ns	= len(s)
-	hs	= np.zeros(ns)
-	n	= len(w)
 
-	hs[0]      = 0.5 * np.log(s[1]/s[0])
-	hs[ns-1]   = 0.5 * np.log(s[ns-1]/s[ns-2])
-	hs[1:ns-1] = 0.5 * (np.log(s[2:ns]) - np.log(s[0:ns-2]))
-
-	
-	S, W       = np.meshgrid(s, w);
-	ws         = S*W
-	ws2        = ws**2
-	kern       = np.vstack((ws2/(1+ws2), ws/(1+ws2)))	
-	
-	# A 2n*ns matrix with all the rows = H'
-	Hsuper  = np.dot(np.ones((2*n,1)), (hs * np.exp(H)).reshape(1, ns))       
-	DK      = kern * Hsuper
+	n   = int(kernMat.shape[0]/2);
+	ns  = kernMat.shape[1];
+		
+	Hsuper  = np.dot(np.ones((2*n,1)), np.exp(H).reshape(1, ns))       
+	DK      = kernMat * Hsuper
 	
 	return DK
 
