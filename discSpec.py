@@ -34,14 +34,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumtrapz, quad
+from scipy.optimize import minimize
+
 
 import os
 import time
 import common
 
 plt.style.use('ggplot')
-
 
 def MaxwellModes(z, w, Gexp):
 	"""
@@ -204,6 +205,19 @@ def GridDensity(x, px, N):
 
 	return z, h
 
+def ReadData(par, fNameH = 'output/H.dat'):
+	"""
+		Read experimental data, and the continuous spectrum
+	"""
+
+	# Read experimental data
+	w, Gexp = common.GetExpData(par['GexpFile'])
+
+	# Read continuous spectrum
+	s, H    = np.loadtxt(fNameH, unpack=True)
+
+	return w, Gexp, s, H
+	
 def guiFurnishGlobals(par):
 
     # toggle flags to prevent printing    
@@ -225,8 +239,8 @@ def guiFurnishGlobals(par):
     return s, H, w, Gexp, Gfitc, wt
 
 def getDiscSpec(par):
-
-
+	"""Main Routine with user specified BaseDistWt and condWt"""
+	
 	# read input
 	if par['verbose']:
 		print('\n(*) Start\n(*) Loading Data Files: ... {}...'.format(par['GexpFile']))
@@ -242,9 +256,6 @@ def getDiscSpec(par):
 	wt  = GetWeights(H, w, s)
 	wt  = wt/np.trapz(wt, np.log(s))
 	wt  = (1. - par['BaseDistWt']) * wt + (par['BaseDistWt']*np.mean(wt))*np.ones(len(wt))
-
-	#~ plt.semilogx(s, wt)
-	#~ plt.show()
 
 	# 
 	# Try different N: number of Maxwell modes
@@ -379,18 +390,232 @@ def getDiscSpec(par):
 
 	return Nopt, g, tau, error
 
-def ReadData(par, fNameH = 'output/H.dat'):
-	"""
-		Read experimental data, and the continuous spectrum
-	"""
+def getDiscSpecMagic(par):
+	"""If magic parameter is turned on"""
+	# read input; initialize parameters
+	if par['verbose']:
+		print('\n(*) Start\n(*) Loading Data Files: ... {}...'.format(par['GexpFile']))
 
-	# Read experimental data
-	w, Gexp = common.GetExpData(par['GexpFile'])
+	w, Gexp, s, H = ReadData(par)
 
-	# Read continuous spectrum
-	s, H    = np.loadtxt(fNameH, unpack=True)
+	n   = len(w);
+	ns  = len(s);
 
-	return w, Gexp, s, H
+	# range of N scanned
+	Nmax  = min(np.floor(3.0 * np.log10(max(w)/min(w))),n/4); # maximum N
+	Nmin  = max(np.floor(0.5 * np.log10(max(w)/min(w))),3);   # minimum N
+	Nv    = np.arange(Nmin, Nmax + 1).astype(int)
+	npts  = len(Nv)
+
+	# range of wtBaseDist scanned
+	wtBase = 0.05 * np.arange(1, 20)
+	AICbst = np.zeros(len(wtBase))
+	Nbst   = np.zeros(len(wtBase))
+	nzNbst = np.zeros(len(wtBase))  # number of nonzeros
+
+	# Estimate Error Weight from Continuous Curve Fit
+	kernMat = common.getKernMat(s, w)
+	Gc      = common.kernel_prestore(H, kernMat);
+	kernMat = None # clear from memory
+	Cerror  = 1./(np.std(Gc/Gexp - 1.))  #	Cerror = 1.?
+		
+	# main loop over wtBaseDist
+	for ib, wb in enumerate(wtBase):
+		
+		# Find the distribution of nodes you need
+		wt  = GetWeights(H, w, s)
+		wt  = wt/np.trapz(wt, np.log(s))
+		wt  = (1. - wb) * wt + (wb * np.mean(wt)) * np.ones(len(wt))
+
+		# Scan the range of number of Maxwell modes N = (Nmin, Nmax) 
+		ev    = np.zeros(npts)
+		condN = np.zeros(npts)
+		nzNv  = np.zeros(npts)  # number of nonzero modes 
+
+		for i in np.arange(npts):
+			N      = Nv[i]
+			z, hz  = GridDensity(np.log(s), wt, N)     # Select "tau" Points
+			
+			# Get g_i
+			g, tau, ev[i], condN[i] = MaxwellModes(z, w, Gexp)
+			nzNv[i]                 = len(g)
+
+		# store the best solution for this particular wb
+		condn      = np.log10(condN) < 10.
+		AIC        = 2. * Nv + 2. * Cerror * ev
+		
+		AICbst[ib] = min(AIC)
+		Nbst[ib]   = Nv[np.argmin(AIC)]
+		nzNbst[ib] = nzNv[np.argmin(AIC)]
+		
+	# global best settings of wb and Nopt; note this is nominal Nopt (!= len(g) due to NNLS)
+	Nopt  = int(Nbst[np.argmin(AICbst)])
+	wbopt = wtBase[np.argmin(AICbst)]
+
+	#
+	# Recompute the best data-set stats
+	#
+	wt  = GetWeights(H, w, s)
+	wt  = wt/np.trapz(wt, np.log(s))
+	wt  = (1. - wbopt) * wt + (wbopt * np.mean(wt)) * np.ones(len(wt))	
+	
+	z, hz              = GridDensity(np.log(s), wt, Nopt)   # Select "tau" Points
+	g, tau, error, cKp = MaxwellModes(z, w, Gexp)   		# Get g_i, taui
+
+	#
+	# Check if modes are close enough to merge
+	#
+	while True:
+		tauSpacing = tau[1:]/tau[:-1]
+
+		if min(tauSpacing) < 1.5:                      # arbitrary limit
+			imode         = np.argmin(tauSpacing)      # merge modes imode and imode + 1
+			g, tau        = mergeModes_magic(g, tau, imode)
+		else:
+			break
+
+
+	print(min(tauSpacing))
+	
+	if par['verbose']:
+		print('\n(*) Number of optimum nodes = {0:d}\n'.format(len(g)))
+
+	#
+	# Some Plotting
+	#
+
+	if par['plotting']:
+
+		plt.clf()
+		plt.plot(wtBase, AICbst, label='AIC')
+		plt.plot(wtBase, nzNbst, label='Nbst')
+		plt.scatter(wbopt, len(g), color='k')
+		plt.scatter(wbopt, np.min(AICbst), color='k')
+		plt.yscale('log')
+		plt.xlabel('baseDistWt')
+		plt.legend()
+		plt.tight_layout()
+		plt.savefig('output/AIC.pdf')		
+
+
+		plt.clf()
+		plt.loglog(tau,g,'o-', label='disc')
+		plt.loglog(s, np.exp(H), label='cont')
+		plt.xlabel('tau')
+		plt.ylabel('g')
+		plt.legend(loc='lower right')
+		plt.tight_layout()
+		plt.savefig('output/dmodes.pdf')			
+
+
+		plt.clf()
+
+		S, W    = np.meshgrid(tau, w)
+		ws      = S*W
+		ws2     = ws**2
+		K       = np.vstack((ws2/(1+ws2), ws/(1+ws2)))   # 2n * nmodes
+		GstM   	= np.dot(K, g)
+		
+		plt.loglog(w, Gexp[:n],'o')
+		plt.loglog(w, Gexp[n:],'o')
+
+		plt.loglog(w, GstM[n:], 'g-')		
+		plt.loglog(w, GstM[:n], 'g-', label='disc')
+
+		# continuous curve	
+		plt.loglog(w, Gc[:n], 'k--', label='cont')
+		plt.loglog(w, Gc[n:], 'k--')
+		
+
+		plt.xlabel(r'$\omega$')
+		plt.ylabel(r'$G^{*}$')
+		plt.legend()
+		plt.savefig('output/Gfitd.pdf')
+  
+	#
+	# Some Printing
+	#
+
+	if par['verbose']:
+		
+		print('(*) Condition number of matrix equation: {0:e}\n'.format(cKp))
+
+		print('\n\t\tModes\n\t\t-----\n\n')
+		print('i \t    g(i) \t    tau(i)\n')
+		print('---------------------------------------\n')
+		
+		for i in range(len(g)):
+			print('{0:3d} \t {1:.5e} \t {2:.5e}'.format(i+1,g[i],tau[i]))
+		print("\n")
+
+		np.savetxt('output/dmodes.dat', np.c_[g, tau], fmt='%e')
+		np.savetxt('output/aic.dat', np.c_[wtBase, nzNbst, AICbst], fmt='%f\t%i\t%e')
+
+
+		S, W    = np.meshgrid(tau, w)
+		ws      = S*W
+		ws2     = ws**2
+		K       = np.vstack((ws2/(1+ws2), ws/(1+ws2)))   # 2n * nmodes
+		GstM   	= np.dot(K, g)		
+		
+		np.savetxt('output/Gfitd.dat', np.c_[w, GstM[:n], GstM[n:]], fmt='%e')
+
+	return Nopt, g, tau, error
+
+
+def normKern_magic(w, gn, taun, g1, tau1, g2, tau2):
+	"""helper function: for costFcn and mergeModes
+	   used only when magic = True"""
+	wt   = w*taun
+	Gnp  = gn * (wt**2)/(1. + wt**2)
+	Gnpp = gn *  wt/(1. + wt**2)
+
+	wt   = w*tau1
+	Gop  = g1 * (wt**2)/(1. + wt**2)
+	Gopp = g1 *  wt/(1. + wt**2)
+	
+	wt    = w*tau2
+	Gop  += g2 * (wt**2)/(1. + wt**2)
+	Gopp += g2 *  wt/(1. + wt**2)
+	
+	return (Gnp/Gop - 1.)**2 + (Gnpp/Gopp - 1.)**2
+
+def costFcn_magic(par, g, tau, imode):
+	""""helper function for mergeModes; establishes cost function to minimize
+		   used only when magic = True"""
+
+	gn   = par[0]
+	taun = par[1]
+
+	g1   = g[imode]
+	g2   = g[imode+1]
+	tau1 = tau[imode]
+	tau2 = tau[imode+1]
+
+	wmin = min(1./tau1, 1./tau2)/10.
+	wmax = max(1./tau1, 1./tau2)*10.
+
+	return quad(normKern_magic, wmin, wmax, args=(gn, taun, g1, tau1, g2, tau2))[0]
+
+def mergeModes_magic(g, tau, imode):
+	"""merge modes imode and imode+1 into a single mode
+	   return gp and taup corresponding to this new mode
+	   used only when magic = True"""
+
+	from scipy.integrate import quad
+	from scipy.optimize import minimize	
+
+	iniGuess = [g[imode] + g[imode+1], 0.5*(tau[imode] + tau[imode+1])]
+	res = minimize(costFcn_magic, iniGuess, args=(g, tau, imode))
+
+	newtau        = np.delete(tau, imode+1)
+	newtau[imode] = res.x[1]
+
+	newg          = np.delete(g, imode+1)
+	newg[imode]   = res.x[0]
+		
+	return newg, newtau
+	
 
 #############################
 #
@@ -403,4 +628,7 @@ if __name__ == '__main__':
 	# Read input parameters from file "inp.dat"
 	#
 	par = common.readInput('inp.dat')
-	_ = getDiscSpec(par)
+	if par['magic']:
+		_ = getDiscSpecMagic(par)
+	else:
+		_ = getDiscSpec(par)

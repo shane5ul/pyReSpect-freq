@@ -50,7 +50,7 @@ SmFacLam 	: 0.5
 # It should contain G*(w) in 3 columns [w Gp Gpp]
 #
 
-GexpFile 	: 'Gst.dat'
+GexpFile 	: 'tests/H3A1.dat'
 
 #
 # Treatment of frequency window ends:
@@ -65,6 +65,14 @@ FreqEnd 	: 1
 #====================================#
 # D I S C R E T E    S P E C T R U M #
 #====================================#
+
+#
+# Auto-magically determine the number and placement of discrete modes
+# If this flag is True, none of the paramters that follow
+# (Nopt, BaseDistWt, or condWt) are used.
+#
+
+magic 		: True
 				
 #
 # Specify number of discrete modes (>0). If set equal to zero, then 
@@ -86,7 +94,7 @@ prune 	    : True
 # Set between 0 and 1. 
 #
 
-BaseDistWt 	: 0.5
+BaseDistWt 	: 0.7
 
 #
 # Parameter controls relative importance of error and conditioning in
