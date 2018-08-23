@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.interpolate import interp1d
 
+#
 # last modified: August 2018
+#
 
 #
 # Functions common to both discrete and continuous spectra
@@ -33,13 +35,13 @@ def readInput(fname='inp.dat'):
 	# Check Consistency of Input Parameters
 	#
 	
-	if par['BaseDistWt'] < 0. or par['BaseDistWt'] > 1. :
-		raise ValueError('The input parameter BaseDistWt needs to be between 0 and 1')
+	#~ if par['BaseDistWt'] < 0. or par['BaseDistWt'] > 1. :
+		#~ raise ValueError('The input parameter BaseDistWt needs to be between 0 and 1')
   
-	elif par['condWt'] < 0. or par['condWt'] > 1.:
-		raise ValueError('The input parameter condWt needs to be between 0 and 1')
-	else:
-		print('Input parameters look OK ...')			
+	#~ elif par['condWt'] < 0. or par['condWt'] > 1.:
+		#~ raise ValueError('The input parameter condWt needs to be between 0 and 1')
+	#~ else:
+		#~ print('Input parameters look OK ...')			
 			
 			
 	return par
@@ -111,5 +113,3 @@ def kernel_prestore(H, kernMat):
 	"""
 	return np.dot(kernMat, np.exp(H))	
 
-	
-	

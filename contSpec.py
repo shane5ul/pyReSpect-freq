@@ -10,12 +10,12 @@ import time
 
 plt.style.use('ggplot')		
 
-from matplotlib import rcParams
-rcParams['axes.labelsize'] = 28 
-rcParams['xtick.labelsize'] = 20
-rcParams['ytick.labelsize'] = 20 
-rcParams['legend.fontsize'] = 20
-rcParams['lines.linewidth'] = 2
+#~ from matplotlib import rcParams
+#~ rcParams['axes.labelsize'] = 28 
+#~ rcParams['xtick.labelsize'] = 20
+#~ rcParams['ytick.labelsize'] = 20 
+#~ rcParams['legend.fontsize'] = 20
+#~ rcParams['lines.linewidth'] = 2
 
 # June 19, 2018: Trying to merge Gstar/contSpec.m and python/Gt/contspec.py into a python version
 #                for Gstar
@@ -50,16 +50,12 @@ def InitializeH(Gexp, s, kernMat):
 	
 	return H
 
-def lcurve(Gexp, Hgs, SmoothFac, kernMat):
+def lcurve(Gexp, Hgs, kernMat, par):
 	"""% 
 	% Function: lcurve(input)
 	%
 	% Input: Gexp = 2n*1 vector [Gt],
 	%        Hgs  = guessed H,
-	%        SmoothFac = Indirect way of controlling lambda_C, Set between -1 
-	%                   (lowest lambda explored) and 1 (highest lambda explored);
-	%                   When set to 0, using lambda_C determined from the
-	%                   L-curve
 	%        kernMat = matrix for faster kernel evaluation
 	%
 	% Output: lamC and 3 vectors of size npoints*1 contains a range of lambda, rho
@@ -68,8 +64,10 @@ def lcurve(Gexp, Hgs, SmoothFac, kernMat):
 	%"""
 
 	# take a coarse mesh: 2 lambda's per decade (auto)
-	lam_min  = 1e-10
-	lam_max  = 1e+1
+	lam_max   = par['lam_max']
+	lam_min   = par['lam_min']
+	SmoothFac = par['SmFacLam']	
+	
 	npoints  = int(2 * (np.log10(lam_max) - np.log10(lam_min)))
 
 	hlam    = (lam_max/lam_min)**(1./(npoints-1.))	
@@ -110,6 +108,7 @@ def lcurve(Gexp, Hgs, SmoothFac, kernMat):
 	#
 	# Dialling in the Smoothness Factor
 	#
+
 	if SmoothFac > 0:
 		lamC = np.exp(np.log(lamC) + SmoothFac*(np.log(lam_max) - np.log(lamC)));
 	elif SmoothFac < 0:
@@ -208,7 +207,6 @@ def kernelD(H, kernMat):
 	
 	return DK
 
-
 # Furnish Globals that you will need for interactive plot
 def guiFurnishGlobals(par):
 
@@ -291,10 +289,6 @@ def getContSpec(par):
 		
 	tic  = time.time()
 	Hgs  = InitializeH(Gexp, s, kernMat)
-
-	#~ plt.plot(s, Hgs)
-	#~ plt.xscale('log')
-	#~ plt.show()
 	
 	if par['verbose']:
 		te   = time.time() - tic
@@ -306,7 +300,7 @@ def getContSpec(par):
 	#
 	
 	if par['lamC'] == 0:
-		lamC, lam, rho, eta = lcurve(Gexp, Hgs, par['SmFacLam'], kernMat)
+		lamC, lam, rho, eta = lcurve(Gexp, Hgs, kernMat, par)
 	else:
 		lamC = par['lamC']
 
@@ -324,7 +318,6 @@ def getContSpec(par):
 	#
 	# Print some datafiles
 	#
-
 	if par['verbose']:
 		te = time.time() - tic
 		print('done ({0:.1f} seconds)\n(*) Writing and Printing, ...'.format(te), end="")
@@ -337,7 +330,6 @@ def getContSpec(par):
 		
 		K   = common.kernel_prestore(H, kernMat);	
 		np.savetxt('output/Gfit.dat', np.c_[w, K[:n], K[n:]], fmt='%e')
-
 
 	#
 	# Graphing
@@ -360,7 +352,6 @@ def getContSpec(par):
 		plt.xlabel(r'$\omega$')
 		plt.ylabel(r'$G^{*}$')
 		plt.savefig('output/Gfit.pdf')
-
 
 		# if lam not explicitly specified then print rho-eta.pdf
 		try:

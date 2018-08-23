@@ -60,6 +60,7 @@ The code is based on the Matlab program [ReSpect](https://www.mathworks.com/matl
 
 ### Major Upgrade: August 2018
 
-+ Major improvements in discrete spectrum (AIC/mergemodes)
 + Incorporating changes from pyReSpect-time into frequency calculation
++ discrete spectrum only "magic" mode from now on, since it works so well
++ Major improvements in discrete spectrum (AIC/mergemodes)
 
