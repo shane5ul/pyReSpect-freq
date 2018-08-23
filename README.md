@@ -1,12 +1,12 @@
-# pyReSpect-time
+# pyReSpect-freq
 
-Extract continuous and discrete relaxation spectra from stress relaxation modulus G(t)
+Extract continuous and discrete relaxation spectra from complex modulus G*(w)
 
 ## Files
 
 ### Code Files
 
-This repository contains two python modules `contSpec.py` `discSpec.py`. They extract the continuous and discrete relaxation spectra from a stress relaxation data. (t versus G(t) experiment or simulation).
+This repository contains two python modules `contSpec.py` `discSpec.py`. They extract the continuous and discrete relaxation spectra from a stress relaxation data. (w versus G*(w) experiment or simulation).
 
 It containts a third module `common.py` which contains utilities required by both `contSpec.py` and `discSpec.py`.
 
@@ -17,7 +17,7 @@ In addition to the python modules, jupyter notebooks `interactContSpec.ipynb` an
 The user is expected to supply two files:
 
 + `inp.dat` is used to control parameters and settings
-+ `Gt.dat` which contains two columns of data `t` and `G(t)`
++ `Gst.dat` which contains three columns of data `w`, `G'` and, `G"`
 
 ### Output Files
 
@@ -60,5 +60,6 @@ The code is based on the Matlab program [ReSpect](https://www.mathworks.com/matl
 
 ### Major Upgrade: August 2018
 
++ Major improvements in discrete spectrum (AIC/mergemodes)
 + Incorporating changes from pyReSpect-time into frequency calculation
 
