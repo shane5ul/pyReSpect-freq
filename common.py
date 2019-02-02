@@ -1,9 +1,43 @@
-import numpy as np
-from scipy.interpolate import interp1d
+#
+# last modified: Feb 2019
+#
 
 #
-# last modified: August 2018
+# Global Imports and Plot Settings
 #
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from scipy.interpolate import interp1d
+from scipy.integrate import cumtrapz, quad
+from scipy.optimize import nnls, minimize, least_squares
+
+import time
+import os
+
+#
+#
+# plotting preferences: change this block to suit your taste
+#
+
+plt.style.use('ggplot')		
+
+#~ try:
+	#~ import seaborn as sns
+#~ except ImportError:
+	#~ plt.style.use('ggplot')		
+#~ else:
+	#~ plt.style.use('seaborn-ticks')
+	#~ sns.set_color_codes()
+	#~ sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
+
+from matplotlib import rcParams
+rcParams['axes.labelsize'] = 28 
+rcParams['xtick.labelsize'] = 20
+rcParams['ytick.labelsize'] = 20 
+rcParams['legend.fontsize'] = 20
+rcParams['lines.linewidth'] = 2
 
 #
 # Functions common to both discrete and continuous spectra
@@ -29,20 +63,7 @@ def readInput(fname='inp.dat'):
 
 			val = eval(tmp)
 
-			par[key] = val
-
-	#
-	# Check Consistency of Input Parameters
-	#
-	
-	#~ if par['BaseDistWt'] < 0. or par['BaseDistWt'] > 1. :
-		#~ raise ValueError('The input parameter BaseDistWt needs to be between 0 and 1')
-  
-	#~ elif par['condWt'] < 0. or par['condWt'] > 1.:
-		#~ raise ValueError('The input parameter condWt needs to be between 0 and 1')
-	#~ else:
-		#~ print('Input parameters look OK ...')			
-			
+			par[key] = val		
 			
 	return par
 	
