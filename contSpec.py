@@ -106,6 +106,19 @@ def lcurve(Gexp, Hgs, kernMat, par):
 	lamC  = lami[eridx]	
 
 	#
+	# 12/18; for extremely smooth data have cutoff at rho = 1e-2?
+	#
+	rhoF  = interp1d(lam, rho)
+
+	if  rhoF(lamC) <= par['rho_cutoff']:
+		try:
+			eridx = (np.abs(rhoF(lami) - par['rho_cutoff'])).argmin()
+			if lami[eridx] > lamC:
+				lamC = lami[eridx]				
+		except:
+			pass
+
+	#
 	# Dialling in the Smoothness Factor
 	#
 
@@ -365,7 +378,7 @@ def getContSpec(par):
 			plt.plot(rho, eta)
 			rhost = np.interp(lamC, lam, rho)
 			etast = np.interp(lamC, lam, eta)
-			plt.scatter(rhost, etast)
+			plt.plot(rhost, etast, 'o', c='k')
 			plt.xscale('log')
 			plt.yscale('log')
 			

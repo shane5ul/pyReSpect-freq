@@ -74,9 +74,9 @@ lam_max     : 1e+1
 #
 # Threshold to avoid picking too small lambda for L-curve without
 # a pronounced corner. This is the maximum average error per datapoint allowed.
-# Small rho_cutoff implies smaller lamC
+# Small rho_cutoff implies smaller lamC [0 for smooth/theory, and 0.001 else]
 #
-rho_cutoff  : 0.001
+rho_cutoff  : 0
 
 #
 # discSpec: how finely to sample BaseWeightDist
