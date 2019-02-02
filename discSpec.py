@@ -30,7 +30,8 @@ from scipy.optimize import minimize
 
 import os
 import time
-import common
+from common import *
+np.set_printoptions(precision=2)
 
 plt.style.use('ggplot')
 
@@ -205,7 +206,7 @@ def ReadData(par, fNameH = 'output/H.dat'):
 	"""
 
 	# Read experimental data
-	w, Gexp = common.GetExpData(par['GexpFile'])
+	w, Gexp = GetExpData(par['GexpFile'])
 
 	# Read continuous spectrum
 	s, H    = np.loadtxt(fNameH, unpack=True)
@@ -229,8 +230,8 @@ def initializeDiscSpec(par):
 	Nv    = np.arange(Nmin, Nmax + 1).astype(int)
 
 	# Estimate Error Weight from Continuous Curve Fit
-	kernMat = common.getKernMat(s, w)
-	Gc      = common.kernel_prestore(H, kernMat);
+	kernMat = getKernMat(s, w)
+	Gc      = kernel_prestore(H, kernMat);
 	Cerror  = 1./(np.std(Gc/Gexp - 1.))  #	Cerror = 1.?
 	
 	return w, Gexp, s, H, Nv, Gc, Cerror
@@ -442,5 +443,5 @@ if __name__ == '__main__':
 	#
 	# Read input parameters from file "inp.dat"
 	#
-	par = common.readInput('inp.dat')
+	par = readInput('inp.dat')
 	_ = getDiscSpecMagic(par)

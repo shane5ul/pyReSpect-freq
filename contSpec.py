@@ -1,24 +1,8 @@
-import numpy as np
-import matplotlib.pyplot as plt
+#
+# Help to find continuous spectrum: Feb 2019, following pyReSpect.py lead in formatting
+#
 
-from scipy.interpolate import interp1d
-from scipy.optimize import least_squares
-
-import common
-import os
-import time
-
-plt.style.use('ggplot')		
-
-#~ from matplotlib import rcParams
-#~ rcParams['axes.labelsize'] = 28 
-#~ rcParams['xtick.labelsize'] = 20
-#~ rcParams['ytick.labelsize'] = 20 
-#~ rcParams['legend.fontsize'] = 20
-#~ rcParams['lines.linewidth'] = 2
-
-# June 19, 2018: Trying to merge Gstar/contSpec.m and python/Gt/contspec.py into a python version
-#                for Gstar
+from common import *
 
 def InitializeH(Gexp, s, kernMat):
 	"""%
@@ -84,7 +68,7 @@ def lcurve(Gexp, Hgs, kernMat, par):
 	for i in range(len(lam)):
 		lamb    = lam[i]
 		H       = getH(lamb, Gexp, H, kernMat)
-		rho[i]  = np.linalg.norm((1 - common.kernel_prestore(H, kernMat)/Gexp))
+		rho[i]  = np.linalg.norm((1 - kernel_prestore(H, kernMat)/Gexp))
 		eta[i]  = np.linalg.norm(np.diff(H, n=2))
 
 	#
@@ -164,7 +148,7 @@ def residualLM(H, lam, Gexp, kernMat):
 	# r = vector of size (n+nl,1); does DIFF work the same?
 	#
 
-	r[0:2*n]      = (1. - common.kernel_prestore(H,kernMat)/Gexp)/np.sqrt(n)  # the Gt and
+	r[0:2*n]      = (1. - kernel_prestore(H,kernMat)/Gexp)/np.sqrt(n)  # the Gt and
 	r[2*n:2*n+nl] = np.sqrt(lam) * np.diff(H, n=2)/np.sqrt(nl)  # second derivative
 	
 	return r
@@ -225,7 +209,7 @@ def guiFurnishGlobals(par):
 
 	from matplotlib import rcParams
 
-	w, Gexp = common.GetExpData(par['GexpFile'])
+	w, Gexp = GetExpData(par['GexpFile'])
 
 	if par['verbose']:
 		print('(*) Initial Set up...', end="")
@@ -248,7 +232,7 @@ def guiFurnishGlobals(par):
 	hs   = (smax/smin)**(1./(ns-1))
 	s    = smin * hs**np.arange(ns)
 
-	kernMat = common.getKernMat(s, w)
+	kernMat = getKernMat(s, w)
 
 	# toggle flags to prevent printing
 
@@ -275,7 +259,7 @@ def getContSpec(par):
 	if par['verbose']:
 		print('\n(*) Start\n(*) Loading Data File: {}...'.format(par['GexpFile']))
 
-	w, Gexp = common.GetExpData(par['GexpFile'])
+	w, Gexp = GetExpData(par['GexpFile'])
 
 	if par['verbose']:
 		print('(*) Initial Set up...', end="")
@@ -298,7 +282,7 @@ def getContSpec(par):
 	hs   = (smax/smin)**(1./(ns-1))
 	s    = smin * hs**np.arange(ns)
 
-	kernMat = common.getKernMat(s, w)
+	kernMat = getKernMat(s, w)
 		
 	tic  = time.time()
 	Hgs  = InitializeH(Gexp, s, kernMat)
@@ -341,7 +325,7 @@ def getContSpec(par):
 
 		np.savetxt('output/H.dat', np.c_[s, H], fmt='%e')
 		
-		K   = common.kernel_prestore(H, kernMat);	
+		K   = kernel_prestore(H, kernMat);	
 		np.savetxt('output/Gfit.dat', np.c_[w, K[:n], K[n:]], fmt='%e')
 
 	#
@@ -357,7 +341,7 @@ def getContSpec(par):
 		plt.savefig('output/H.pdf')
 
 		plt.clf()
-		K = common.kernel_prestore(H, kernMat)
+		K = kernel_prestore(H, kernMat)
 		plt.loglog(w, Gexp[:n],'o')
 		plt.loglog(w, K[:n], 'k-')
 		plt.loglog(w, Gexp[n:],'o')
@@ -401,5 +385,5 @@ if __name__ == '__main__':
 	#
 	# Read input parameters from file "inp.dat"
 	#
-	par = common.readInput('inp.dat')
+	par = readInput('inp.dat')
 	H, lamC = getContSpec(par)
