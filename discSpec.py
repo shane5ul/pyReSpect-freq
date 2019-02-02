@@ -21,19 +21,9 @@
 #         Gfitd.dat  : The discrete G* for Nopt [w Gp Gpp] 
 #
 
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
-from scipy.integrate import cumtrapz, quad
-from scipy.optimize import minimize
-
-
-import os
-import time
 from common import *
 np.set_printoptions(precision=2)
 
-plt.style.use('ggplot')
 
 def MaxwellModes(z, w, Gexp):
 	"""
@@ -61,7 +51,7 @@ def MaxwellModes(z, w, Gexp):
 	#
 	g, error, condKp = nnLLS(w, tau, Gexp)
 
-	izero = np.where(g < 1e-8)
+	izero = np.where(g/max(g) < 1e-7)
 	tau   = np.delete(tau, izero)
 	g     = np.delete(g, izero)
 
@@ -200,26 +190,17 @@ def GridDensity(x, px, N):
 
 	return z, h
 
-def ReadData(par, fNameH = 'output/H.dat'):
-	"""
-		Read experimental data, and the continuous spectrum
-	"""
-
-	# Read experimental data
-	w, Gexp = GetExpData(par['GexpFile'])
-
-	# Read continuous spectrum
-	s, H    = np.loadtxt(fNameH, unpack=True)
-
-	return w, Gexp, s, H
-	
 def initializeDiscSpec(par):
 	
 	# read input; initialize parameters
 	if par['verbose']:
 		print('\n(*) Start\n(*) Loading Data Files: ... {}...'.format(par['GexpFile']))
 
-	w, Gexp, s, H = ReadData(par)
+	# Read experimental data
+	w, Gexp = GetExpData(par['GexpFile'])
+
+	# Read continuous spectrum
+	s, H    = np.loadtxt('output/H.dat', unpack=True)
 	
 	n    = len(w);
 	ns   = len(s);
@@ -285,14 +266,38 @@ def getDiscSpecMagic(par):
 	z, hz              = GridDensity(np.log(s), wt, Nopt)   # Select "tau" Points
 	g, tau, error, cKp = MaxwellModes(z, w, Gexp)   		# Get g_i, taui
 
+
+	#################### Stick Fine Tune Solution part here
+
+	#~ print(len(g), g, tau)
+
+	g, tau, dtau = FineTuneSolution(tau, w, Gexp, estimateError=True)
+	
+	#~ print(len(g), g, tau)
+	#~ quit()
+	
+	######################
+
+
 	#
 	# Check if modes are close enough to merge
 	#
+	indx       = np.argsort(tau)
+	tau        = tau[indx]
+	g          = g[indx]
 	tauSpacing = tau[1:]/tau[:-1]
-	while min(tauSpacing) < par['minTauSpacing']:
+	itry       = 0
+
+	while min(tauSpacing) < par['minTauSpacing'] and itry < 3:
+		print("\tTau Spacing < minTauSpacing")
+		
 		imode      = np.argmin(tauSpacing)      # merge modes imode and imode + 1
 		g, tau     = mergeModes_magic(g, tau, imode)
+		
+		g, tau, dtau  = FineTuneSolution(tau, w, Gexp, estimateError=True)
+				
 		tauSpacing = tau[1:]/tau[:-1]
+		itry      += 1
 
 	if par['verbose']:
 		print('\n(*) Number of optimum nodes = {0:d}\n'.format(len(g)))
@@ -317,8 +322,8 @@ def getDiscSpecMagic(par):
 		plt.clf()
 		plt.loglog(tau,g,'o-', label='disc')
 		plt.loglog(s, np.exp(H), label='cont')
-		plt.xlabel('tau')
-		plt.ylabel('g')
+		plt.xlabel(r'$\tau$')
+		plt.ylabel(r'$g$')
 		plt.legend(loc='lower right')
 		plt.tight_layout()
 		plt.savefig('output/dmodes.pdf')			
@@ -415,12 +420,6 @@ def mergeModes_magic(g, tau, imode):
 	   return gp and taup corresponding to this new mode
 	   used only when magic = True"""
 
-	from scipy.integrate import quad
-	from scipy.optimize import minimize	
-
-
-
-
 	iniGuess = [g[imode] + g[imode+1], 0.5*(tau[imode] + tau[imode+1])]
 	res = minimize(costFcn_magic, iniGuess, args=(g, tau, imode))
 
@@ -431,7 +430,63 @@ def mergeModes_magic(g, tau, imode):
 	newg[imode]   = res.x[0]
 		
 	return newg, newtau
+
+#######################
+
+def FineTuneSolution(tau, w, Gexp, estimateError=False):
+	"""Given a spacing of modes tau, tries to do NLLS to fine tune it further
+	   If it fails, then it returns the old tau back	   
+	   Uses helper function: res_wG which computes residuals
+	   """	   
+	try:
+		res  = least_squares(res_wG, tau, bounds=(0., np.inf),	args=(w, Gexp))
+		tau  = res.x
+		tau0 = tau.copy()
 	
+		# Error Estimate	
+		if estimateError:
+			J = res.jac
+			cov = np.linalg.pinv(J.T.dot(J)) * (res.fun**2).mean()
+			dtau = np.sqrt(np.diag(cov))
+		
+	except:	
+		pass
+		
+	g, tau, _, _ = MaxwellModes(np.log(tau), w, Gexp)   # Get g_i, taui
+
+	#
+	# if mode has dropped out, then need to delete corresponding dtau mode
+	#
+	if estimateError and len(tau) < len(tau0):
+		
+		nkill = 0
+		for i in range(len(tau0)):
+			if np.min(np.abs(tau0[i] - tau)) > 1e-12 * tau0[i]:
+				dtau = np.delete(dtau, i-nkill)
+				nkill += 1
+
+	if estimateError:
+		return g, tau, dtau
+	else:
+		return g, tau
+
+def res_wG(tau, wexp, Gexp):
+	"""
+		Helper function for final optimization problem
+	"""
+	g, _, _ = nnLLS(wexp, tau, Gexp)
+	Gmodel  = np.zeros(len(Gexp))
+
+	S, W    = np.meshgrid(tau, wexp)
+	ws      = S*W
+	ws2     = ws**2
+	K       = np.vstack((ws2/(1+ws2), ws/(1+ws2)))   # 2n * nmodes
+		
+	Gmodel 	= np.dot(K, g)
+		
+	residual = Gmodel/Gexp - 1.
+        
+	return residual
 
 #############################
 #
