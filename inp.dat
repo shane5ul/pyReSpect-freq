@@ -49,7 +49,7 @@ SmFacLam 	: 0.5
 # It should contain G*(w) in 3 columns [w Gp Gpp]
 #
 
-GexpFile 	: 'tests/H3A1.dat'
+GexpFile 	: 'tests/c1Gst.dat'
 
 #
 # Treatment of frequency window ends:

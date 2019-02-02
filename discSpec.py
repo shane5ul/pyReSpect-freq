@@ -8,18 +8,8 @@
 #
 #        fGstFile = name of file that contains G*(w) in 3 columns [w Gp Gpp]
 #                   default: 'Gst.dat' is assumed.
-#        verbose  = 1, then prints onscreen messages, and prints datafiles
-#        plotting = 1, then plots to stdio.
-#
-#        prune    = 1, then tries to kill modes with -ve g(i)
-#  
-#        Nopt     = optional argument, if you want to get a spectrum for a
-#                   specified number of modes. If absent it will use some
-#                   heuristic algorithm to figure out an optimum.
-#        
-# In addition par.BaseDistWt and par.condWt control the blending of the
-# flat profile, and the weight of the "condition number" in determining
-# the optimal Nopt. Both are set to 0.5 by default.
+#        verbose  = true, then prints onscreen messages, and prints datafiles
+#        plotting = true, then plots to stdio.
 #
 #
 # Output: Nopt    = optimum number of discrete modes
@@ -27,7 +17,7 @@
 #         error   = error norm of the discrete fit
 #        
 #         dmodes.dat : Prints the [g tau] for the particular Nopt
-#         Nopt.dat   : If Nopt not supplied, then optimum [N error(N) cond(N)]
+#         aic.dat    : [N error aic]
 #         Gfitd.dat  : The discrete G* for Nopt [w Gp Gpp] 
 #
 
