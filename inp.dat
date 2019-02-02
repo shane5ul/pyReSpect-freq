@@ -72,10 +72,17 @@ lam_min     : 1e-10
 lam_max     : 1e+1
 
 #
+# Threshold to avoid picking too small lambda for L-curve without
+# a pronounced corner. This is the maximum average error per datapoint allowed.
+# Small rho_cutoff implies smaller lamC
+#
+rho_cutoff  : 0.001
+
+#
 # discSpec: how finely to sample BaseWeightDist
 #           smaller value increases cost; typical range 0.02 - 0.2
-deltaBaseWeightDist : 0.05
+deltaBaseWeightDist : 0.2
 
 # discSpec: how close do successive modes (tau2/tau1) have to be before we 
 #           try to mege them
-minTauSpacing       : 1.5
+minTauSpacing       : 1.25
