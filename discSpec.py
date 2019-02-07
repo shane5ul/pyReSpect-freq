@@ -360,14 +360,14 @@ def getDiscSpecMagic(par):
 		print('(*) Condition number of matrix equation: {0:e}\n'.format(cKp))
 
 		print('\n\t\tModes\n\t\t-----\n\n')
-		print('i \t    g(i) \t    tau(i)\n')
-		print('---------------------------------------\n')
+		print('  i \t    g(i) \t    tau(i)\t    dtau(i)\n')
+		print('-----------------------------------------------------\n')
 		
 		for i in range(len(g)):
-			print('{0:3d} \t {1:.5e} \t {2:.5e}'.format(i+1,g[i],tau[i]))
+			print('{0:3d} \t {1:.5e} \t {2:.5e} \t {3:.5e}'.format(i+1,g[i],tau[i], dtau[i]))
 		print("\n")
 
-		np.savetxt('output/dmodes.dat', np.c_[g, tau], fmt='%e')
+		np.savetxt('output/dmodes.dat', np.c_[g, tau, dtau], fmt='%e')
 		np.savetxt('output/aic.dat', np.c_[wtBase, nzNbst, AICbst], fmt='%f\t%i\t%e')
 
 
