@@ -1,13 +1,28 @@
 #
 # This is a sample input file; 
+#
 # (*) Lines that start with '#' are ignored as comments
-# (*) Do not change the labels on the LHS - doing so will lead to errors
+# (*) Do not change the labels on the LHS - doing so will lead to unforeseen errors
+# (*) Change the flag on the RHS of the ":" as appropriate
 #
 
-#========================================#
-#    COMMON SETTINGS                     #
-#========================================#
+#==================================#
+#  C O M M O N   S E T T I N G S   #
+#==================================#
 
+#
+# Filename for "experimental" data. PlainTXT
+# It should contain G(t) in 2 columns [t Gt]
+#
+GexpFile 	: 'tests/test4f.dat'
+
+#
+# Plateau Modulus: is there a residual plateau in the data?
+# set = True if you need it to be fitted
+#
+plateau     : True
+
+#
 # Printing to screen and files in output/ is on/off (True/False)
 #
 verbose   	: True
@@ -22,9 +37,8 @@ plotting  	: True
 #========================================#
 
 #
-# Number of grid points to represent the continuous spectrum
+# Number of grid points to represent the continuous spectrum (typical 50-100)
 #
-
 ns			: 100
 
 #
@@ -37,29 +51,36 @@ lamC 		: 0
 #
 # Smoothing Factor: Indirect way of controlling lambda_C, relative to
 # the one inferred from L-curve.
-#
 # Set between -1 (lowest lambda explored) and 1 (highest lambda explored);
 # When set to 0, using lambda_C determined from the L-curve
 #
 
-SmFacLam 	: 0.5
-
-#
-# Default filename for experimental data
-# It should contain G*(w) in 3 columns [w Gp Gpp]
-#
-
-GexpFile 	: 'tests/c1Gst.dat'
+SmFacLam 	: 0
 
 #
 # Treatment of frequency window ends:
 #
-#  = 3 : t = 1/w - strict condition
-#  = 2 : t = 1/w
-#  = 1 : t = 1/w + lenient condition
+#  = 3 : t = tm - strict condition
+#  = 2 : t = tm
+#  = 1 : t = tm + lenient condition
 #
 
 FreqEnd 	: 1
+
+
+#========================================#
+#  D I S C R E T E     S P E C T R U M   #
+#========================================#
+
+#
+# Max Number of Modes: Set = 0, if you want it to automatically determine
+# the optimal number of modes; otherwise it starts by guessing that you want
+# numModes number of modes; however, the actual number of modes may be less than
+# or equal to numModes, based on how close the modes are (merging), and if any of
+# the mode-weights (gi) are negligible
+#
+MaxNumModes    : 0
+
 
 #========================================#
 #    FINE TUNE SETTINGS                  #
@@ -69,18 +90,23 @@ FreqEnd 	: 1
 # contSpec: lcurve calculation, limits of lambda explored
 #           can look at the rho v/s eta plot to see if this needs to be widened.
 lam_min     : 1e-10
-lam_max     : 1e+1
+lam_max     : 1e3
+
+#
+# Lambda Density per Decade for Lcurve: set = 2 or more
+#
+lamDensity  : 3
 
 #
 # Threshold to avoid picking too small lambda for L-curve without
 # a pronounced corner. This is the maximum average error per datapoint allowed.
-# Small rho_cutoff implies smaller lamC [0 for smooth/theory, and 0.001 else]
+# Small rho_cutoff implies smaller lamC
 #
 rho_cutoff  : 0
 
 #
 # discSpec: how finely to sample BaseWeightDist
-#           smaller value increases cost; typical range 0.02 - 0.2
+#           smaller value increases cost; typical range 0.10 - 0.25
 deltaBaseWeightDist : 0.2
 
 # discSpec: how close do successive modes (tau2/tau1) have to be before we 

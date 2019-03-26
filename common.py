@@ -117,20 +117,27 @@ def getKernMat(s, w):
 	
 	return np.vstack((ws2/(1+ws2), ws/(1+ws2))) *hsv
 		
-def kernel_prestore(H, kernMat):
+def kernel_prestore(H, kernMat, *argv):
 	"""
 	     turbocharging kernel function evaluation by prestoring kernel matrix
-		
 		 Date    : 8/17/2018
-		 Function: kernel_prestore(input)
+		 Function: kernel_prestore(input) returns K*h, where h = exp(H)
 		 
 		 Same as kernel, except prestoring hs, S, and W to improve speed 3x.
 		
 		 outputs the 2n*1 dimensional vector K(H)(w) which is comparable to G* = [G'|G"]'
-		
+		 3/11/2019: returning Kh + G0
+		 		
 		 Input: H = substituted CRS,
 		        kernMat = 2n*ns matrix [(ws^2/1+ws^2) | (ws/1+ws)]'*hs
 		        	
 	"""
-	return np.dot(kernMat, np.exp(H))	
+	if len(argv) > 0:
+		n = int(kernMat.shape[0]/2);
+		G0v = np.zeros(2*n)
+		G0v[:n] = argv[0]
+	else:
+		G0v = 0.
+	
+	return np.dot(kernMat, np.exp(H)) + G0v
 
