@@ -65,6 +65,11 @@ def readInput(fname='inp.dat'):
 
 			par[key] = val		
 			
+	# create output directory if none exists
+	if not os.path.exists("output"):
+		os.makedirs("output")
+
+			
 	return par
 	
 def GetExpData(fname):
