@@ -423,15 +423,24 @@ def getContSpec(par):
 		te = time.time() - tic
 		print('done ({0:.1f} seconds)\n(*) Writing and Printing, ...'.format(te), end="")
 
+		#~ # Save inferred H(s) and Gw
+		#~ if par['plateau']:
+			#~ K   = kernel_prestore(H, kernMat, G0);	
+			#~ np.savetxt('output/H.dat', np.c_[s, H], fmt='%e', header='G0 = {0:0.3e}'.format(G0))
+		#~ else:
+			#~ K   = kernel_prestore(H, kernMat);
+			#~ np.savetxt('output/H.dat', np.c_[s, H], fmt='%e')
+
 		# Save inferred H(s) and Gw
-		if par['plateau']:
-			K   = kernel_prestore(H, kernMat, G0);	
-			np.savetxt('output/H.dat', np.c_[s, H], fmt='%e', header='G0 = {0:0.3e}'.format(G0))
-		else:
-			K   = kernel_prestore(H, kernMat);
-			np.savetxt('output/H.dat', np.c_[s, H], fmt='%e')
+		if par['lamC'] != 0:
+			if par['plateau']:
+				K   = kernel_prestore(H, kernMat, G0);	
+				np.savetxt('output/H.dat', np.c_[s, H], fmt='%e', header='G0 = {0:0.3e}'.format(G0))
+			else:
+				K   = kernel_prestore(H, kernMat);
+				np.savetxt('output/H.dat', np.c_[s, H], fmt='%e')
 			
-		np.savetxt('output/Gfit.dat', np.c_[w, K[:n], K[n:]], fmt='%e')
+			np.savetxt('output/Gfit.dat', np.c_[w, K[:n], K[n:]], fmt='%e')
 
 		# print Hlam, rho-eta, and logP if lcurve has been visited
 		if par['lamC'] == 0:
@@ -484,8 +493,22 @@ def getContSpec(par):
 			plt.semilogx(s,H+2.5*dH, c='gray', alpha=0.5)
 			plt.semilogx(s,H-2.5*dH, c='gray', alpha=0.5)
 
+			# save errorbar
+			if par['verbose']:			
+				if par['plateau']:
+					K   = kernel_prestore(Hm, kernMat, G0);	
+					np.savetxt('output/H.dat', np.c_[s, H, dH], fmt='%e', header='G0 = {0:0.3e}'.format(G0))
+				else:
+					K   = kernel_prestore(Hm, kernMat);	
+					np.savetxt('output/H.dat', np.c_[s, H, dH], fmt='%e')
+
+				np.savetxt('output/Gfit.dat', np.c_[w, K[:n], K[n:]], fmt='%e')
+			
 		plt.tight_layout()
 		plt.savefig('output/H.pdf')
+
+
+
 
 
 		plt.clf()
