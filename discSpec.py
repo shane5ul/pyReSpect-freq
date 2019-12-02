@@ -26,7 +26,7 @@ def initializeDiscSpec(par):
 
 	# Read continuous spectrum
 	fNameH  = 'output/H.dat'
-	s, H    = np.loadtxt(fNameH, unpack=True)
+	s, H, _ = np.loadtxt(fNameH, unpack=True)
 	
 	n    = len(w);
 	ns   = len(s);
