@@ -12,9 +12,9 @@
 
 #
 # Filename for "experimental" data. PlainTXT
-# It should contain G(t) in 2 columns [t Gt]
+# It should contain G*(w) in 3 columns [w Gp Gpp]
 #
-GexpFile 	: 'tests/test4f.dat'
+GexpFile 	: 'tests/test7.dat'
 
 #
 # Plateau Modulus: is there a residual plateau in the data?
@@ -43,7 +43,7 @@ ns			: 100
 
 #
 # Specify lambda_C instead of using the one inferred from the L-curve
-# If 0, then use the L-curve method to determine lambda.
+# If 0, then use the Bayesian inference to find lamC (internally lamM)
 #
 
 lamC 		: 0
@@ -100,7 +100,7 @@ lamDensity  : 3
 #
 # Threshold to avoid picking too small lambda for L-curve without
 # a pronounced corner. This is the maximum average error per datapoint allowed.
-# Small rho_cutoff implies smaller lamC
+# Small rho_cutoff implies smaller lamC (for rhoEtaCalc = True)
 #
 rho_cutoff  : 0
 

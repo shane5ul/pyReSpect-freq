@@ -1,13 +1,13 @@
 
-Tests 1-3 are from Takeh et al. paper.
+Tests 1-3 (except 1u) are from Takeh 2013 paper.
 
 test1.dat : synthetic twin-peaked spectrum
-test1n.dat: same twin-peaked spectrum + noise
-test2.dat : symmetric star data
-test3.dat : Watanabe binary LLB
-test4.dat : Gel data with plateau-presubtracted
-test4f.dat: Same gel data with plateau left intact (need to set plateau flag to on)
-test5.dat : Hamed Janani EPDM rubber data
-test6.dat : H3A1 comb data from Dealy
-test7.dat : Laponite superposed G*(w)
-test8.dat : example that violates Kramers-Kroenig
+test1n.dat: same twin-peaked spectrum + 2.5% noise
+test1u.dat: unequal-peaked spectrum like NLREG 1993 paper + 2.5% noise
+test2.dat : symmetric star data (Takeh and Shanbhag, 2013)
+test3.dat : Watanabe binary LLB (Takeh and Shanbhag, 2013)
+test4.dat : H3A1A H-polymer (Lentzakis 2014: Ankiewicz et al. 2016; 10.1122/1.4960334)
+test5.dat : Elastomer with terminal plateau (Goyal et al. 1999; 10.1115/1.2812378)
+test6.dat : An example that violates Kramers-Kroenig
+test7.dat : Laponite superposed G*(w) (need nonzero plateau)
+

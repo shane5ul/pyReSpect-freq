@@ -213,14 +213,14 @@ def lcurve(Gexp, Hgs, kernMat, par, *argv):
 	#
 	if par['plotting']:
 		plt.clf()
-		plt.axvline(x=lamC, c='k', label=r'$\lambda_c$')
-		plt.axvline(x=lamM, c='gray', label=r'$\lambda_m$')
+		plt.axvline(x=lamC, c='k', label=r'$\lambda_c$ = {0:0.2e}'.format(lamC))
+		plt.axvline(x=lamM, c='gray', label=r'$\lambda_m$ = {0:0.2e}'.format(lamM))
 		plt.ylim(-20,1)
 		plt.plot(lam, logP, 'o-')
 		plt.xscale('log')
 		plt.xlabel(r'$\lambda$')
 		plt.ylabel(r'$\log\,p(\lambda)$')
-		plt.legend(loc='upper left')
+		plt.legend(loc='upper left', fontsize=14)
 		plt.tight_layout()
 		plt.savefig('output/logP.pdf')
 
@@ -405,7 +405,7 @@ def getContSpec(par):
 
 	if par['verbose']:
 		te = time.time() - tic
-		print('({0:.1f} seconds)\n(*) Extracting CRS, ...\n\t... lamC = {1:0.3e}; '.
+		print('({0:.1f} seconds)\n(*) Extracting CRS, ...\n\t... lamM = {1:0.3e}; '.
 		      format(te, lamC), end="")
 		tic = time.time()
 
