@@ -1,6 +1,10 @@
 # pyReSpect-freq
 
-Extract continuous and discrete relaxation spectra from complex modulus G*(w)
+Extract continuous and discrete relaxation spectra from complex modulus G*(w). Paper which describe the method are:
+
++ Shanbhag, S., "pyReSpect: A Computer Program to Extract Discrete and Continuous Spectra from Stress Relaxation Experiments", Macromolecular Theory and Simulations, **2019**, 1900005 [doi: 10.1002/mats.201900005].
++ Takeh, A. and Shanbhag, S. "A computer program to extract the continuous and discrete relaxation spectra from dynamic viscoelastic measurements", Appl. Rheol. **2013**, 23, 24628.
++ Shanbhag, S., "Relaxation spectra using nonlinear Tikhonov regularization with a Bayesian criterion", Rheologica Acta, **2020**,  59, 509 [doi: 10.1007/s00397-020-01212-w].
 
 ## Files
 
