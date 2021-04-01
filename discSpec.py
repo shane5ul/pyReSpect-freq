@@ -125,7 +125,7 @@ def nnLLS(w, tau, Gexp, isPlateau):
 	#
 	Kp      = np.dot(np.diag((1./Gexp)), K)
 	condKp  = np.linalg.cond(Kp)
-	g       = nnls(Kp, np.ones(len(Gexp)))[0]
+	g       = nnls(Kp, np.ones(len(Gexp)), maxiter=10*Kp.shape[1])[0]
 		
 	GstM   	= np.dot(K, g)
 	error 	= np.sum((GstM/Gexp - 1.)**2)
