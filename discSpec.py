@@ -33,6 +33,8 @@ def initializeDiscSpec(par):
 	
 	# range of N scanned
 	Nmax  = min(np.floor(3.0 * np.log10(max(w)/min(w))),n/4); # maximum N
+	if par['MaxNumModes'] > 0:
+		Nmax  = min(Nmax, par['MaxNumModes'])
 	Nmin  = max(np.floor(0.5 * np.log10(max(w)/min(w))),3);   # minimum N
 	Nv    = np.arange(Nmin, Nmax + 1).astype(int)
 
