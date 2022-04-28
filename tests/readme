@@ -5,7 +5,7 @@ test1.dat : synthetic twin-peaked spectrum
 test1n.dat: same twin-peaked spectrum + 2.5% noise
 test1u.dat: unequal-peaked spectrum like NLREG 1993 paper + 2.5% noise
 test2.dat : symmetric star data (Takeh and Shanbhag, 2013)
-test3.dat : Watanabe binary LLB (Takeh and Shanbhag, 2013)
+test3.dat : Watanabe binary LLB (Watanabe et al 2004. 10.1021/ma030443y)
 test4.dat : H3A1A H-polymer (Lentzakis 2014: Ankiewicz et al. 2016; 10.1122/1.4960334)
 test5.dat : Elastomer with terminal plateau (Goyal et al. 1999; 10.1115/1.2812378)
 test6.dat : An example that violates Kramers-Kroenig
