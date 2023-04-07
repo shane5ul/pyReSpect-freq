@@ -2,9 +2,9 @@
 
 Extract continuous and discrete relaxation spectra from complex modulus G*(w). Paper which describe the method are:
 
++ Shanbhag, S., "Relaxation spectra using nonlinear Tikhonov regularization with a Bayesian criterion", Rheologica Acta, **2020**,  59, 509 [doi: 10.1007/s00397-020-01212-w].
 + Shanbhag, S., "pyReSpect: A Computer Program to Extract Discrete and Continuous Spectra from Stress Relaxation Experiments", Macromolecular Theory and Simulations, **2019**, 1900005 [doi: 10.1002/mats.201900005].
 + Takeh, A. and Shanbhag, S. "A computer program to extract the continuous and discrete relaxation spectra from dynamic viscoelastic measurements", Appl. Rheol. **2013**, 23, 24628.
-+ Shanbhag, S., "Relaxation spectra using nonlinear Tikhonov regularization with a Bayesian criterion", Rheologica Acta, **2020**,  59, 509 [doi: 10.1007/s00397-020-01212-w].
 
 ## Files
 
@@ -66,7 +66,7 @@ ipywidgets (6.0.0)
 
 The code is based on the Matlab program [ReSpect](https://www.mathworks.com/matlabcentral/fileexchange/40458-respect), which extract the continuous and discrete relaxation spectra from frequency data, G*(w).
 
-### Major Upgrage: March-Apr 2019
+### Major Upgrade: March-Apr 2019
 + added ability to infer plateau modulus G0; modified all python routines and reorganized inp.dat
 + use a Bayesian formulation to infer uncertainty in the continuous spectrum
 + currently keeping old method to determine critical lambda, but using a far more efficient method (3-4x savings in compute time)
