@@ -1,6 +1,6 @@
 # pyReSpect-freq
 
-Extract continuous and discrete relaxation spectra from complex modulus G*(w). Paper which describe the method are:
+Extract the continuous and discrete relaxation spectra from complex modulus G*(w). Papers which describe the method are:
 
 + Shanbhag, S., "Relaxation spectra using nonlinear Tikhonov regularization with a Bayesian criterion", Rheologica Acta, **2020**,  59, 509 [doi: 10.1007/s00397-020-01212-w].
 + Shanbhag, S., "pyReSpect: A Computer Program to Extract Discrete and Continuous Spectra from Stress Relaxation Experiments", Macromolecular Theory and Simulations, **2019**, 1900005 [doi: 10.1002/mats.201900005].
@@ -21,11 +21,11 @@ In addition to the python modules, jupyter notebooks `interactContSpec.ipynb`. T
 The user is expected to supply two files:
 
 + `inp.dat` is used to control parameters and settings
-+ `Gst.dat` which contains three columns of data `w`, `G'` and, `G"`
++ `Gst.dat` which contains three columns of data `w`, `G'` and, `G"` [07/2023: optionally 2 more columns specifying weights]
 
 ### Output Files
 
-Text files containting output from the code are stored in a directory `output/`. These include a fit of the data, the spectra, and other files relevant to the continuous or discrete spectra calculation. 
+Text files containing output from the code are stored in a directory `output/`. These include a fit of the data, the spectra, and other files relevant to the continuous or discrete spectra calculation. 
 
 Graphical and onscreen output can be suppressed by appropriate flags in `inp.dat`.
 
@@ -53,9 +53,9 @@ The interactive mode offers a "GUI" for exploring parameter settings. To launch 
 
 The numbers in parenthesis show the version this has been tested on. 
 
-python3 (3.5.2)
-numpy (1.14.2)
-scipy (1.0.1)
+python3 (3.6)
+numpy (1.21)
+scipy (1.3)
 
 For interactive mode:
 
