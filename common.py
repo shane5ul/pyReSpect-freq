@@ -1,4 +1,6 @@
 #
+# July 2023: allowing for optional 2 additional columns to specify error in G' and G"
+#
 # last modified: Feb 2019
 #
 
@@ -79,30 +81,58 @@ def GetExpData(fname):
 	   Input:  fname = name of file that contains G(t) in 2 columns [t Gt]
 	   Output: A n*1 vector "t", and a n*1 vector Gt"""
 	   
-	   
-	wo, Gpo, Gppo = np.loadtxt(fname, unpack=True)  # 3 columns,  w - Gp - Gpp
+
+	try:
+		data = np.loadtxt(fname)
+		cols = data.shape[1]		# number of columns in data file
+
+		# if only 3 columns, then set weights to 1.0
+		if cols == 3:
+			wo   = data[:,0]
+			Gpo  = data[:,1]
+			Gppo = data[:,2]
+		else:
+			wo   = data[:,0]
+			Gpo  = data[:,1]
+			Gppo = data[:,2]
+			wG1  = data[:,3]
+			wG2  = data[:,4]
+
+	except OSError:
+		print('*Error*: Gst data file is either not in the correct path, or incorrectly formatted')
+		quit()
 
 	#
 	# any repeated "time" values
-	#
-	
+	#	
 	wo, indices = np.unique(wo, return_index = True)
 	Gpo         = Gpo[indices]
 	Gppo        = Gppo[indices]
+	if cols > 3:
+		wG1 = wG1[indices]
+		wG2 = wG2[indices]
+
 
 	#
+	# if three columns are provided then assume that the data is preprocessed
+	# and it does not need any interpolation; 
+	#
 	# Sanitize the input by spacing it out. Using linear interpolation
-	#	
-	fp  =  interp1d(wo, Gpo, fill_value="extrapolate")
-	fpp =  interp1d(wo, Gppo, fill_value="extrapolate")
+	#
+	if cols == 3:
+		fp  =  interp1d(wo, Gpo, fill_value="extrapolate")
+		fpp =  interp1d(wo, Gppo, fill_value="extrapolate")
 
-	w   =  np.logspace(np.log10(np.min(wo)), np.log10(np.max(wo)), max(len(wo),200))		
-	Gp  =  fp(w)
-	Gpp =  fpp(w)
+		w   =  np.geomspace(np.min(wo), np.max(wo), 100)		
+		Gp  =  fp(w)
+		Gpp =  fpp(w)
 
-	Gst =  np.append(Gp, Gpp)  # % Gp followed by Gpp (2n*1)
+		Gst =  np.append(Gp, Gpp)  # % Gp followed by Gpp (2n*1)
 
-	return w, Gst
+		return w, Gst, np.ones(len(Gst))
+	else:
+		return wo, np.append(Gpo, Gppo), np.append(wG1, wG2)
+
 
 def getKernMat(s, w):
 	"""furnish kerMat() which helps faster kernel evaluation, given s, w
