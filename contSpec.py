@@ -426,14 +426,6 @@ def getContSpec(par):
         te = time.time() - tic
         print('done ({0:.1f} seconds)\n(*) Writing and Printing, ...'.format(te), end="")
 
-        #~ # Save inferred H(s) and Gw
-        #~ if par['plateau']:
-            #~ K   = kernel_prestore(H, kernMat, G0);	
-            #~ np.savetxt('output/H.dat', np.c_[s, H], fmt='%e', header='G0 = {0:0.3e}'.format(G0))
-        #~ else:
-            #~ K   = kernel_prestore(H, kernMat);
-            #~ np.savetxt('output/H.dat', np.c_[s, H], fmt='%e')
-
         # Save inferred H(s) and Gw
         if par['lamC'] != 0:
             if par['plateau']:
@@ -513,7 +505,6 @@ def getContSpec(par):
 
 
 
-
         plt.clf()
         
         if par['plateau']:
@@ -553,7 +544,10 @@ def getContSpec(par):
     if par['verbose']:
         print('done\n(*) End\n')
         
-    return H, lamC
+    if not par['plateau']:
+        G0 = 0.
+        
+    return s, H, G0, lamC
 
 def guiFurnishGlobals(par):
 
@@ -599,9 +593,9 @@ def guiFurnishGlobals(par):
     rcParams['legend.fontsize'] = 12
     rcParams['lines.linewidth'] = 2
 
-    plt.clf()
+    if par['plotting']: plt.clf()
 
-    return s, w, kernMat, Gexp, par, lam, rho, eta
+    return s, w, kernMat, Gexp, wexp, par, lam, rho, eta
 
 
 #	 
@@ -613,4 +607,4 @@ if __name__ == '__main__':
     # Read input parameters from file "inp.dat"
     #
     par = readInput('inp.dat')
-    H, lamC = getContSpec(par)
+    s, H, G0, lamC = getContSpec(par)
