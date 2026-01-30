@@ -25,9 +25,38 @@ The user is expected to supply two files:
 
 ### Output Files
 
-Text files containing output from the code are stored in a directory `output/`. These include a fit of the data, the spectra, and other files relevant to the continuous or discrete spectra calculation. 
+Graphical and onscreen output can be suppressed by appropriate flags in `inp.dat`. Text files and PDFs of graphs containing output from the code are stored in a directory `output/`. 
 
-Graphical and onscreen output can be suppressed by appropriate flags in `inp.dat`.
+These include a fit of the data, the spectra, and other files relevant to the continuous or discrete spectra calculation. 
+
+Contents of the files are described below. The main output files are:
+
+1. `H.dat`: This file contains 2 or 3 columns. 
+    * The first two columns are $\tau$ and $H(\tau)$. The third column, when it is present, provides errorbars $\Delta H(\tau)$. These are plotted as `H.pdf`.
+    * $H(\tau)$ is the natural logarithm of the CRS; exponentiate to get the CRS $h(\tau) = \exp(H(\tau))$.
+    * When `plateau` is set to true (viscoelastic solids), then the header of this file stores the plateau modulus `G0`.
+2. `dmodes.dat`: This file contains 2 columns describing the DRS
+    * The fist column is $g_i$ and the second column is $\tau_i$.
+    * When `plateau` is set to true (viscoelastic solids), then the header of this file stores the plateau modulus `G0`.
+    * `dmodes.pdf` plots the DRS and compares it with the CRS $h(\tau) = e^{H(\tau)}$.
+3. `Gfit.dat`: This file contains three columns.
+    * the first column is frequency $\omega$, the second and third columns are  $G'$ and $G''$ corresponding to the **CRS**.
+    * `Gfit.pdf` compares the fits with the interpolated experimental data.
+4. `Gfitd.dat`: This file contains three columns.
+    * the first column is frequency $\omega$, the second and third columns are  $G'$ and $G''$ corresponding to the **DRS**.
+    * `Gfitd.pdf` compares the fits with the interpolated experimental data. It also shows the fit of the CRS.
+
+The remaining output files may be helpful for diagnostics:
+
+1. `logPlam.dat`: This file contains two columns, which store information used to figure out the optimal $\lambda$ for CRS extraction.
+    * The first column is the set of $\lambda$ explored, and the second column is the posterior probability that $\lambda$, $p(\lambda)$.
+    * `logP.pdf` plots this data and identifies the location of the optimal $\lambda$ near the peak of $p(\lambda)$. It uses 
+2. `rho-eta.dat`: This file contains three columns $\lambda$, $\rho(\lambda)$, and $\eta(\lambda)$
+    * $\lambda$ is the regularization parameter in Tikhonov regularization. $\rho$ measures the accuracy of the data fit, and $\eta$ measures the curvature (penalty).
+    * The file `rho-eta.pdf` plots $\eta$ versus $\rho$ and marks the  optimal $\lambda^{*}$
+3. `aic.dat`: This file has three columns that contain information used to figure out the optimal number of discrete modes.
+    * the three columns in order are: baseDistWt, Noptimal, AIC
+    * they are plotted in `AIC.pdf` which also shows the optimal choice.
 
 ### Test Files
 
