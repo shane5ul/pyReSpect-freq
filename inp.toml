@@ -1,0 +1,20 @@
+# pyrespect_freq configuration file
+
+[spectrum]
+ns       = 100
+plateau  = false
+freq_end = "lenient"
+
+[regularization]
+lam_min     = 1e-10
+lam_max     = 1e3
+SmFacLam    = 0.0
+lam_density = 2
+
+[discrete]
+delta_base_weight_dist = 0.2
+min_tau_spacing        = 1.25
+
+[io]
+resample   = true
+n_resample = 100
