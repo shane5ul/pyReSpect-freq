@@ -76,7 +76,7 @@ def _nnLLS(
 
     Kp     = np.dot(np.diag(wexp / Gexp), K)
     condKp = np.linalg.cond(Kp)
-    g      = nnls(Kp, wexp, maxiter=10 * Kp.shape[1])[0]
+    g      = nnls(Kp, wexp, maxiter=100000)[0]
 
     GstM  = np.dot(K, g)
     error = np.sum((wexp * (GstM / Gexp - 1.0)) ** 2)

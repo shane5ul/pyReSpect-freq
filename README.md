@@ -1,16 +1,14 @@
 # pyReSpect-freq-2.0
 
-A rewrite of the python classic library for extracting **continuous** and **discrete** relaxation spectra from frequency sweep data. The core algorithms are the same, the interface (both developer and user) is modernized.
+A rewrite of the classic python library for extracting **continuous** and **discrete** relaxation spectra from frequency sweep data. The core algorithms are the same, the interface (both developer and user) is modernized.
 
 The legacy codebase has been [archived](https://github.com/shane5ul/pyReSpect-freq-legacy).
 
-
-
-The method solves the inverse problem: given measurements of
+pyReSpect solves the inverse problem: given measurements of
 $G'(\omega)$ and $G''(\omega)$, recover $H(s)$ such that
 
-$$G'(\omega)  = \int \frac{\omega^2 s^2}{1+\omega^2 s^2}\, e^{H(s)}\, d\ln s, \qquad
-  G''(\omega) = \int \frac{\omega s}{1+\omega^2 s^2}\, e^{H(s)}\, d\ln s$$
+$$G'(\omega)  = \int \frac{\omega^2 s^2}{1+\omega^2 s^2} e^{H(s)} d\ln s, \qquad
+  G''(\omega) = \int \frac{\omega s}{1+\omega^2 s^2} e^{H(s)} d\ln s$$
 
 The CRS $H(s)$ is found via Tikhonov regularization with a Bayesian criterion for selecting the regularization parameter $\lambda$. The DRS (Maxwell modes $g_i$, $\tau_i$) is then extracted from the CRS using an AIC-minimization strategy.
 
