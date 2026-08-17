@@ -107,13 +107,21 @@ def _MaxwellModes(
     tau   = np.delete(tau, izero);
     g     = np.delete(g, izero)
 
-
     # prune negligible weights
     g_ref = g[:-1] if isPlateau else g
     izero = np.where(g_ref / np.max(g_ref) < 1e-8)
     tau   = np.delete(tau, izero)
     g     = np.delete(g,   izero)
 
+    sort_idx = np.argsort(tau)
+    tau = tau[sort_idx]
+    if isPlateau:
+        gtmp = g[:-1] if isPlateau else g        
+        gtmp = gtmp[sort_idx]
+        g = np.append(gtmp, g[-1])
+    else:
+        g = g[sort_idx]
+    
     return g, tau, error, condKp
 
 
