@@ -184,7 +184,7 @@ def _GridDensity(
     pint = pint / ci[-1]
     ci   = ci   / ci[-1]
 
-    alfa    = 1.0 / (N - 1)
+    alfa    = 1.0 / max((N - 1),1)
     zij     = np.zeros(N + 1)
     z       = np.zeros(N)
     z[0]    = x.min()
@@ -345,7 +345,11 @@ def getDiscSpec(
     if config.max_num_modes is not None:
         Nmax = min(Nmax, config.max_num_modes)
     Nmin = max(np.floor(0.5 * np.log10(max(w) / min(w))), 3)
-    Nv   = np.arange(Nmin, Nmax + 1).astype(int)
+    if Nmax > Nmin:
+        Nv   = np.arange(Nmin, Nmax + 1).astype(int)
+    else:
+        print("Warning: make sure you have set maxnummodes prudently")
+        Nv   = np.arange(Nmax, Nmax + 1).astype(int)
     npts = len(Nv)
 
     wtBase  = config.delta_base_weight_dist * np.arange(
@@ -367,6 +371,7 @@ def getDiscSpec(
             nzNv[i]       = len(g)
 
         AIC        = 2.0 * Nv + 2.0 * Cerror * ev
+
         AICbst[ib] = AIC.min()
         Nbst[ib]   = Nv[AIC.argmin()]
         nzNbst[ib] = nzNv[AIC.argmin()]
@@ -391,18 +396,20 @@ def getDiscSpec(
     else:
         g      = g[indx]
 
-    tauSpacing = tau[1:] / tau[:-1]
-    itry       = 0
-    while min(tauSpacing) < config.min_tau_spacing and itry < 3:
-        imode        = np.argmin(tauSpacing)
-        g, tau       = _mergeModes(g, tau, imode)
-        succ, g, tau = _FineTuneSolution(tau, w, Gexp, wexp, config.plateau)
-        if succ:
-            # fine-tune after merge succeeded: revert to the pre-merge
-            # fine-tuned solution (gf, tauf), matching legacy behaviour
-            g, tau = gf.copy(), tauf.copy()
+    # only if the number of modes is greater than 1
+    if len(tau) > 1:
         tauSpacing = tau[1:] / tau[:-1]
-        itry      += 1
+        itry       = 0
+        while min(tauSpacing) < config.min_tau_spacing and itry < 3:
+            imode        = np.argmin(tauSpacing)
+            g, tau       = _mergeModes(g, tau, imode)
+            succ, g, tau = _FineTuneSolution(tau, w, Gexp, wexp, config.plateau)
+            if succ:
+                # fine-tune after merge succeeded: revert to the pre-merge
+                # fine-tuned solution (gf, tauf), matching legacy behaviour
+                g, tau = gf.copy(), tauf.copy()
+            tauSpacing = tau[1:] / tau[:-1]
+            itry      += 1
 
     G0 = 0.0
     if config.plateau:
